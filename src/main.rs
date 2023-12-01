@@ -14,8 +14,8 @@ impl Number {
 }
 
 const RADIX: u32 = 10;
-const WORD_NUMS: [&str; 10] = [
-    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+const WORD_NUMS: [&str; 11] = [
+    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
 ];
 
 fn main() {
@@ -39,25 +39,23 @@ fn parse_numbers(records: &Vec<&str>) -> Vec<Vec<Number>> {
 
         digits.append(&mut words);
         let mut numbers = digits;
-        numbers.sort_by(|a, b| a.idx.cmp(&b.idx));
+        numbers.sort_unstable_by_key(|n| n.idx);
         output.push(numbers);
     }
     output
 }
 
 fn parse_words(record: &str) -> Vec<Number> {
-    let mut output: Vec<Number> = vec![];
-    for word in WORD_NUMS {
-        for (idx, _word) in record.match_indices(word) {
-            output.push(Number::new(idx, convert(word), true))
-        }
-    }
-    output
+    WORD_NUMS
+        .iter()
+        .flat_map(|word| record.match_indices(word))
+        .map(|(idx, word)| Number::new(idx, convert(word), true))
+        .collect()
 }
 
 fn parse_digits(record: &str) -> Vec<Number> {
     let mut output: Vec<Number> = vec![];
-    for (idx, _char) in format!("{record}*").chars().enumerate() {
+    for (idx, _char) in record.chars().enumerate() {
         if _char.is_digit(RADIX) {
             let val: usize = _char.to_digit(RADIX).unwrap() as usize;
             output.push(Number::new(idx, val, false));
@@ -67,7 +65,7 @@ fn parse_digits(record: &str) -> Vec<Number> {
 }
 
 fn convert(word: &str) -> usize {
-    return match word {
+    match word {
         "zero" => 0,
         "one" => 1,
         "two" => 2,
@@ -78,9 +76,8 @@ fn convert(word: &str) -> usize {
         "seven" => 7,
         "eight" => 8,
         "nine" => 9,
-        "ten" => 10,
-        _ => panic!("Number not in 0-10"),
-    };
+        _ => panic!("Number not in 0-9"),
+    }
 }
 
 fn part1(numbers: &Vec<Vec<Number>>) -> usize {
@@ -91,7 +88,7 @@ fn part1(numbers: &Vec<Vec<Number>>) -> usize {
             Some(n) => n.val,
             None => 0,
         };
-        let last = match record.iter().rev().find(|n| !n.nan) {
+        let last = match record.iter().rfind(|n| !n.nan) {
             Some(n) => n.val,
             None => 0,
         };
