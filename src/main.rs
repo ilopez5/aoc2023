@@ -104,12 +104,15 @@ fn part2(numbers: &Vec<Vec<Number>>) -> usize {
     let mut solution: usize = 0;
     for record in numbers {
         // Part 2 does not care at all
-        let first = record.first().unwrap();
-        let last = record.last().unwrap();
-
-        let record_solution = first.val * 10 + last.val;
-
-        solution += record_solution;
+        let first = match record.first() {
+            Some(n) => n.val,
+            None => 0,
+        };
+        let last = match record.last() {
+            Some(n) => n.val,
+            None => 0,
+        };
+        solution += first * 10 + last;
     }
     solution
 }
